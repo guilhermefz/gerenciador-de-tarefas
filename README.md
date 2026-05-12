@@ -19,8 +19,12 @@ Gerenciador de tarefas para as aulas práticas da disciplina de Qualidade e Test
 git clone https://github.com/ketlymachado/gerenciador-de-tarefas.git
 cd gerenciador-de-tarefas
 npm install
-cd server && npm install && cd ..
-cd client && npm install && cd ..
+cd server
+npm install
+cd ..
+cd client
+npm install
+cd ..
 
 # 2. Configure as variáveis de ambiente
 cp .env.example .env
