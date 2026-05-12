@@ -1,0 +1,16 @@
+{
+    "compilerOptions": {
+        "target": "es2020",
+        "lib": ["dom", "es2020"],
+        "types": ["cypress", "@testing-library/cypress"],
+        "esModuleInterop": true,
+        "moduleResolution": "node",
+        "module": "esnext",
+        "resolveJsonModule": true,
+        "allowJs": true,
+        "strict": true,
+        "noEmit": true,
+        "skipLibCheck": true
+    },
+    "include": ["e2e/**/*.ts", "support/**/*.ts"]
+}

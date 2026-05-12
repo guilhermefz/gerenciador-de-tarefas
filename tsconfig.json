@@ -1,0 +1,8 @@
+{
+    "compilerOptions": {
+        "baseUrl": ".",
+        "types": ["@cucumber/cucumber", "node"],
+        "skipLibCheck": true
+    },
+    "include": ["client/**/*", "server/**/*"]
+}
