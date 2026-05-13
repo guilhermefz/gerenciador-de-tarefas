@@ -1,11 +1,11 @@
 import axios from 'axios';
-import { AuthResponse, User } from './types';
+import { RespostaAutenticacao, Usuario } from './types';
 
 const API_URL = import.meta.env.VITE_API_URL;
 
-export const login = async (email: string, password: string): Promise<AuthResponse> => {
+export const entrar = async (email: string, senha: string): Promise<RespostaAutenticacao> => {
     try {
-        const response = await axios.post(`${API_URL}/auth/login`, { email, password });
+        const response = await axios.post(`${API_URL}/autenticacao/entrar`, { email, senha });
 
         return response.data;
     } catch (error) {
@@ -14,13 +14,13 @@ export const login = async (email: string, password: string): Promise<AuthRespon
     }
 };
 
-export const register = async (
-    name: string,
+export const registrar = async (
+    nome: string,
     email: string,
-    password: string,
-): Promise<AuthResponse> => {
+    senha: string,
+): Promise<RespostaAutenticacao> => {
     try {
-        const response = await axios.post(`${API_URL}/auth/register`, { name, email, password });
+        const response = await axios.post(`${API_URL}/autenticacao/registrar`, { nome, email, senha });
 
         return response.data;
     } catch (error) {
@@ -29,9 +29,9 @@ export const register = async (
     }
 };
 
-export const getCurrentUser = async (token: string): Promise<AuthResponse['user']> => {
+export const buscarUsuarioAtual = async (token: string): Promise<RespostaAutenticacao['usuario']> => {
     try {
-        const response = await axios.get(`${API_URL}/auth/me`, {
+        const response = await axios.get(`${API_URL}/autenticacao/perfil`, {
             headers: { Authorization: `Bearer ${token}` },
         });
 
@@ -42,29 +42,29 @@ export const getCurrentUser = async (token: string): Promise<AuthResponse['user'
     }
 };
 
-export const validateToken = async (token: string): Promise<User> => {
+export const validarToken = async (token: string): Promise<Usuario> => {
     try {
-        const response = await axios.get(`${API_URL}/auth/validate`, {
+        const response = await axios.get(`${API_URL}/autenticacao/validar`, {
             headers: {
                 Authorization: `Bearer ${token}`,
             },
         });
 
-        return response.data.user;
+        return response.data.usuario;
     } catch (error) {
         console.error('Erro ao validar token:', error);
         throw error;
     }
 };
 
-export const refreshToken = async (oldToken: string): Promise<string> => {
+export const renovarToken = async (tokenAntigo: string): Promise<string> => {
     try {
         const response = await axios.post(
-            `${API_URL}/auth/refresh`,
+            `${API_URL}/autenticacao/renovar`,
             {},
             {
                 headers: {
-                    Authorization: `Bearer ${oldToken}`,
+                    Authorization: `Bearer ${tokenAntigo}`,
                 },
             },
         );

@@ -1,27 +1,27 @@
-export interface Task {
+export interface Tarefa {
     id: number;
-    title: string;
-    description?: string;
-    completed: boolean;
-    dueDate?: string;
-    priority?: 'low' | 'medium' | 'high';
-    userId: number;
-    createdAt: string;
-    updatedAt: string;
+    titulo: string;
+    descricao?: string;
+    concluida: boolean;
+    dataVencimento?: string;
+    prioridade?: 'low' | 'medium' | 'high';
+    usuarioId: number;
+    criadaEm: string;
+    atualizadaEm: string;
 }
 
-export interface User {
+export interface Usuario {
     id: number;
     email: string;
-    name: string;
-    createdAt?: string;
+    nome: string;
+    criadoEm?: string;
 }
 
-export interface AuthResponse {
+export interface RespostaAutenticacao {
     token: string;
-    user: {
+    usuario: {
         id: number;
         email: string;
-        name: string;
+        nome: string;
     };
 }

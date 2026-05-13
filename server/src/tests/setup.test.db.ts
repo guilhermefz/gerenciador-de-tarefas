@@ -1,29 +1,29 @@
 import bcrypt from 'bcryptjs';
 import { prisma } from '../utils/prisma';
 
-export let testUser: { id: number; email: string; password: string };
+export let usuarioTeste: { id: number; email: string; senha: string };
 
-export const setupTestDB = async () => {
-    await prisma.task.deleteMany();
-    await prisma.user.deleteMany();
-    await prisma.$executeRawUnsafe('DELETE FROM sqlite_sequence WHERE name = "User";');
-    await prisma.$executeRawUnsafe('DELETE FROM sqlite_sequence WHERE name = "Task";');
+export const configurarBancoDeTeste = async () => {
+    await prisma.tarefa.deleteMany();
+    await prisma.usuario.deleteMany();
+    await prisma.$executeRawUnsafe('DELETE FROM sqlite_sequence WHERE name = "Usuario";');
+    await prisma.$executeRawUnsafe('DELETE FROM sqlite_sequence WHERE name = "Tarefa";');
 
-    const plainPassword = 'Senha123';
-    const hashedPassword = await bcrypt.hash(plainPassword, 10);
-    const uniqueEmail = `usuario_${Date.now()}@exemplo.teste`;
+    const senhaTexto = 'Senha123';
+    const senhaHash = await bcrypt.hash(senhaTexto, 10);
+    const emailUnico = `usuario_${Date.now()}@exemplo.teste`;
 
-    const user = await prisma.user.create({
+    const usuario = await prisma.usuario.create({
         data: {
-            email: uniqueEmail,
-            name: 'Usuário Exemplo',
-            password: hashedPassword,
+            email: emailUnico,
+            nome: 'Usuário Exemplo',
+            senha: senhaHash,
         },
     });
 
-    testUser = { id: user.id, email: uniqueEmail, password: plainPassword };
+    usuarioTeste = { id: usuario.id, email: emailUnico, senha: senhaTexto };
 };
 
-export const disconnectTestDB = async () => {
+export const desconectarBancoDeTeste = async () => {
     await prisma.$disconnect();
 };

@@ -4,24 +4,24 @@ import { useAuth } from '../../context/AuthContext';
 
 export const Login = () => {
     const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
-    const [loading, setLoading] = useState(false);
-    const { login } = useAuth();
+    const [senha, setSenha] = useState('');
+    const [erro, setErro] = useState('');
+    const [carregando, setCarregando] = useState(false);
+    const { fazerLogin } = useAuth();
     const navigate = useNavigate();
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setError('');
-        setLoading(true);
+        setErro('');
+        setCarregando(true);
         try {
-            await login(email, password);
+            await fazerLogin(email, senha);
             navigate('/tasks');
         } catch (err) {
             console.error(err);
-            setError('Falha no login. Verifique suas credenciais.');
+            setErro('Falha no login. Verifique suas credenciais.');
         } finally {
-            setLoading(false);
+            setCarregando(false);
         }
     };
 
@@ -30,8 +30,8 @@ export const Login = () => {
             <div className="w-full max-w-md bg-slate-950 text-white p-8 rounded-2xl shadow-lg">
                 <h2 className="text-3xl font-bold text-center mb-6">Entrar</h2>
 
-                {error && (
-                    <p className="error-message mb-4 text-red-400 text-sm text-center" data-testid="error-message">{error}</p>
+                {erro && (
+                    <p className="error-message mb-4 text-red-400 text-sm text-center" data-testid="error-message">{erro}</p>
                 )}
 
                 <form onSubmit={handleSubmit} className="space-y-4" data-testid="login-form">
@@ -44,7 +44,7 @@ export const Login = () => {
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
                             required
-                            disabled={loading}
+                            disabled={carregando}
                             data-testid="email-input"
                             className="w-full px-4 py-2 rounded-lg bg-slate-700 text-white border border-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-600 disabled:bg-slate-800 disabled:text-slate-400 disabled:border-slate-600 disabled:cursor-not-allowed"
                         />
@@ -52,13 +52,13 @@ export const Login = () => {
                     <div>
                         <label className="block text-sm font-medium mb-1">Senha</label>
                         <input
-                            name="password"
+                            name="senha"
                             placeholder="Digite a senha"
                             type="password"
-                            value={password}
-                            onChange={(e) => setPassword(e.target.value)}
+                            value={senha}
+                            onChange={(e) => setSenha(e.target.value)}
                             required
-                            disabled={loading}
+                            disabled={carregando}
                             data-testid="password-input"
                             className="w-full px-4 py-2 rounded-lg bg-slate-700 text-white border border-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-600 disabled:bg-slate-800 disabled:text-slate-400 disabled:border-slate-600 disabled:cursor-not-allowed"
                         />
@@ -66,12 +66,12 @@ export const Login = () => {
                     <button
                         type="submit"
                         className={`w-full px-4 py-2 rounded-lg text-white font-medium bg-gradient-to-r from-indigo-700 to-indigo-900 transition hover:brightness-110 ${
-                            !loading ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'
+                            !carregando ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'
                         } flex justify-center items-center`}
-                        disabled={loading}
+                        disabled={carregando}
                         data-testid="login-button"
                     >
-                        {loading ? (
+                        {carregando ? (
                             <svg
                                 className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
                                 xmlns="http://www.w3.org/2000/svg"
@@ -93,7 +93,7 @@ export const Login = () => {
                                 ></path>
                             </svg>
                         ) : null}
-                        {loading ? 'Entrando...' : 'Entrar'}
+                        {carregando ? 'Entrando...' : 'Entrar'}
                     </button>
                 </form>
             </div>

@@ -1,5 +1,5 @@
-export const getPriorityLabel = (priority?: string) => {
-    switch (priority) {
+export const obterRotuloPrioridade = (prioridade?: string) => {
+    switch (prioridade) {
         case 'low':
             return 'Baixa';
         case 'medium':
@@ -11,8 +11,8 @@ export const getPriorityLabel = (priority?: string) => {
     }
 };
 
-export const getPriorityColor = (priority?: string) => {
-    switch (priority) {
+export const obterCorPrioridade = (prioridade?: string) => {
+    switch (prioridade) {
         case 'low':
             return 'text-green-400';
         case 'medium':

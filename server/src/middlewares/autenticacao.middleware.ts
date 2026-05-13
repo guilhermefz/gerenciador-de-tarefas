@@ -4,7 +4,7 @@ import jwt from 'jsonwebtoken';
 import { JWT_SECRET } from '../config';
 import { prisma } from '../utils/prisma';
 
-export const authenticate = async (
+export const autenticar = async (
     req: Request,
     res: Response,
     next: NextFunction,
@@ -18,16 +18,16 @@ export const authenticate = async (
             return;
         }
 
-        const decoded = jwt.verify(token, JWT_SECRET) as { userId: number };
-        const user = await prisma.user.findUnique({ where: { id: decoded.userId } });
+        const decoded = jwt.verify(token, JWT_SECRET) as { usuarioId: number };
+        const usuario = await prisma.usuario.findUnique({ where: { id: decoded.usuarioId } });
 
-        if (!user) {
+        if (!usuario) {
             res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Token inválido' });
 
             return;
         }
 
-        req.userId = user.id;
+        req.usuarioId = usuario.id;
         next();
     } catch (error) {
         res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Token inválido ou expirado', error });

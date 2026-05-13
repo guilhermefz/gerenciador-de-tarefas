@@ -102,7 +102,7 @@ gerenciador-de-tarefas/
 
 Abra e leia antes de continuar. Em cada arquivo, observe o que está indicado:
 
-- `prisma/schema.prisma`: quais campos o modelo `Task` tem e quais são opcionais
+- `prisma/schema.prisma`: quais campos o modelo `Tarefa` tem e quais são opcionais
 - `server/src/routes/task.routes.ts`: quais rotas existem e quais exigem autenticação
 - `server/src/services/task.service.ts`: como a lógica de negócio usa as funções de `utils/`
 - `server/src/utils/task.utils.ts`: leia cada função, sua entrada, lógica e o que retorna
@@ -147,16 +147,16 @@ Abra `server/src/utils/task.utils.ts` e `server/src/utils/auth.utils.ts`. São s
 
 | Função | O que faz | Onde é usada |
 |---|---|---|
-| `formatarPrioridade(prioridade)` | Converte "low"/"medium"/"high" para "Baixa"/"Média"/"Alta" | `GET /api/tasks/stats`: formata os rótulos de prioridade na resposta |
-| `estaAtrasada(tarefa, agora?)` | Verifica se uma tarefa está vencida | `GET /api/tasks/stats`: conta tarefas em atraso |
-| `diasParaVencimento(dueDate, agora?)` | Calcula quantos dias faltam para o vencimento | `GET /api/tasks/stats`: conta tarefas vencendo em 7 dias |
-| `validarEmail(email)` | Verifica se um e-mail tem formato válido | `POST /api/auth/register`: rejeita e-mails inválidos com status 400 |
-| `calcularEstatisticas(tarefas)` | Gera resumo com total, concluídas e contagem por prioridade | `GET /api/tasks/stats`: base do cálculo de estatísticas |
-| `validarForcaSenha(senha)` | Verifica comprimento, letras e números | `POST /api/auth/register`: rejeita senhas fracas com status 400 |
+| `formatarPrioridade(prioridade)` | Converte "low"/"medium"/"high" para "Baixa"/"Média"/"Alta" | `GET /api/tarefas/estatisticas`: formata os rótulos de prioridade na resposta |
+| `estaAtrasada(tarefa, agora?)` | Verifica se uma tarefa está vencida | `GET /api/tarefas/estatisticas`: conta tarefas em atraso |
+| `diasParaVencimento(dataVencimento, agora?)` | Calcula quantos dias faltam para o vencimento | `GET /api/tarefas/estatisticas`: conta tarefas vencendo em 7 dias |
+| `validarEmail(email)` | Verifica se um e-mail tem formato válido | `POST /api/autenticacao/registrar`: rejeita e-mails inválidos com status 400 |
+| `calcularEstatisticas(tarefas)` | Gera resumo com total, concluídas e contagem por prioridade | `GET /api/tarefas/estatisticas`: base do cálculo de estatísticas |
+| `validarForcaSenha(senha)` | Verifica comprimento, letras e números | `POST /api/autenticacao/registrar`: rejeita senhas fracas com status 400 |
 
 Essas funções são **puras**: recebem dados, processam e retornam resultado, sem banco de dados e sem efeitos colaterais. São candidatas diretas para teste unitário.
 
-Antes de continuar, abra os arquivos de serviço e veja as chamadas reais: `server/src/services/auth.service.ts` (método `registerUser`) e `server/src/services/task.service.ts` (método `getStats`). Identificar onde uma função é usada é parte da análise que um testador precisa fazer antes de escrever os casos de teste.
+Antes de continuar, abra os arquivos de serviço e veja as chamadas reais: `server/src/services/auth.service.ts` (método `registrarUsuario`) e `server/src/services/task.service.ts` (método `buscarEstatisticas`). Identificar onde uma função é usada é parte da análise que um testador precisa fazer antes de escrever os casos de teste.
 
 ### 1.3 Seu primeiro teste (guiado)
 
@@ -297,8 +297,8 @@ describe('estaAtrasada', () => {
 
   it('deve retornar true para tarefa não concluída com data passada', () => {
     const tarefa = {
-      dueDate: new Date('2025-06-10'), // 5 dias atrás
-      completed: false,
+      dataVencimento: new Date('2025-06-10'), // 5 dias atrás
+      concluida: false,
     };
 
     const resultado = estaAtrasada(tarefa, hoje);
@@ -308,8 +308,8 @@ describe('estaAtrasada', () => {
 
   it('deve retornar false para tarefa concluída mesmo com data passada', () => {
     const tarefa = {
-      dueDate: new Date('2025-06-10'),
-      completed: ___, // ← COMPLETE: qual valor faz a tarefa ser concluída?
+      dataVencimento: new Date('2025-06-10'),
+      concluida: ___, // ← COMPLETE: qual valor faz a tarefa ser concluída?
     };
 
     const resultado = estaAtrasada(tarefa, hoje);
@@ -319,8 +319,8 @@ describe('estaAtrasada', () => {
 
   it('deve retornar false para tarefa sem data de vencimento', () => {
     const tarefa = {
-      dueDate: ___, // ← COMPLETE: como representar "sem data"?
-      completed: false,
+      dataVencimento: ___, // ← COMPLETE: como representar "sem data"?
+      concluida: false,
     };
 
     const resultado = estaAtrasada(tarefa, hoje);
@@ -330,8 +330,8 @@ describe('estaAtrasada', () => {
 
   it('deve retornar false para tarefa com data futura', () => {
     const tarefa = {
-      dueDate: ___, // ← COMPLETE: crie uma data posterior a 15/06/2025
-      completed: false,
+      dataVencimento: ___, // ← COMPLETE: crie uma data posterior a 15/06/2025
+      concluida: false,
     };
 
     const resultado = ___(tarefa, hoje); // ← COMPLETE: qual função chamar?
@@ -417,7 +417,7 @@ Por isso os testes de API usam `async/await`: uma requisição HTTP é uma opera
 
 Na aula 12 você viu o conceito: quando uma função depende de algo externo (banco, rede, serviço), você substitui essa dependência por uma **versão controlada** chamada *mock*. O *mock* responde com dados prontos, sem acessar o recurso real.
 
-Nos testes de API desta aula, todas as rotas de tarefas exigem autenticação JWT. Em vez de gerar tokens reais em cada teste, vamos mockar o *middleware* de autenticação, substituindo-o por uma versão que simplesmente define o `userId` e deixa a requisição passar. Isso isola o teste do sistema de autenticação.
+Nos testes de API desta aula, todas as rotas de tarefas exigem autenticação JWT. Em vez de gerar tokens reais em cada teste, vamos mockar o *middleware* de autenticação, substituindo-o por uma versão que simplesmente define o `usuarioId` e deixa a requisição passar. Isso isola o teste do sistema de autenticação.
 
 ### 2.1 Entenda a infraestrutura de teste
 
@@ -430,7 +430,7 @@ O projeto já tem tudo configurado:
 Abra e leia `server/src/tests/setup.test.db.ts`. O arquivo:
 1. Limpa todas as tarefas e usuários do banco de teste
 2. Cria um usuário com senha hasheada
-3. Exporta `testUser` com `id`, `email` e `password`; você vai precisar desses três nos testes de autenticação da Parte 3
+3. Exporta `usuarioTeste` com `id`, `email` e `senha`; você vai precisar desses três nos testes de autenticação da Parte 3
 
 ### 2.2 As rotas que vamos testar
 
@@ -438,12 +438,12 @@ Abra `server/src/routes/task.routes.ts`. As rotas disponíveis:
 
 | Método | Rota | O que faz |
 |---|---|---|
-| POST | `/api/tasks` | Cria uma tarefa |
-| GET | `/api/tasks` | Lista tarefas do usuário |
-| GET | `/api/tasks/stats` | Estatísticas das tarefas do usuário |
-| GET | `/api/tasks/:id` | Busca uma tarefa por ID |
-| PUT | `/api/tasks/:id` | Atualiza uma tarefa |
-| DELETE | `/api/tasks/:id` | Remove uma tarefa |
+| POST | `/api/tarefas` | Cria uma tarefa |
+| GET | `/api/tarefas` | Lista tarefas do usuário |
+| GET | `/api/tarefas/estatisticas` | Estatísticas das tarefas do usuário |
+| GET | `/api/tarefas/:id` | Busca uma tarefa por ID |
+| PUT | `/api/tarefas/:id` | Atualiza uma tarefa |
+| DELETE | `/api/tarefas/:id` | Remove uma tarefa |
 
 ### 2.3 Primeiro teste de API (guiado)
 
@@ -457,15 +457,15 @@ npm run migrate:test
 Antes de criar o arquivo, três pontos que podem causar dúvida:
 
 - **Posição do `jest.mock`:** precisa ficar antes dos imports. O Jest garante que ele seja executado antes de qualquer módulo ser carregado, mas para que o TypeScript e o linter não reclamem da ordem, a convenção é declará-lo no topo. Siga esse padrão em todos os arquivos de teste que usarem *mocks*.
-- **Operador `??`:** `testUser.id ?? 1` retorna `testUser.id` se ele existir, ou `1` como alternativa. É uma precaução para o caso de `setupTestDB` ainda não ter rodado.
+- **Operador `??`:** `usuarioTeste.id ?? 1` retorna `usuarioTeste.id` se ele existir, ou `1` como alternativa. É uma precaução para o caso de `configurarBancoDeTeste` ainda não ter rodado.
 - **`beforeAll` e `afterAll`:** `beforeAll` roda uma vez antes de todos os testes do arquivo, para preparar o banco. `afterAll` roda ao final, para fechar a conexão e liberar recursos.
 
 Crie `server/src/tests/routes/task.routes.test.ts`:
 
 ```typescript
 jest.mock('../../middlewares/auth.middleware', () => ({
-    authenticate: (req: any, res: any, next: any) => {
-        req.userId = testUser.id ?? 1;
+    autenticar: (req: any, res: any, next: any) => {
+        req.usuarioId = usuarioTeste.id ?? 1;
         next();
     },
 }));
@@ -474,28 +474,28 @@ import { StatusCodes } from 'http-status-codes';
 import request from 'supertest';
 import app from '../../app';
 import { prisma } from '../../utils/prisma';
-import { setupTestDB, disconnectTestDB, testUser } from '../setup.test.db';
+import { configurarBancoDeTeste, desconectarBancoDeTeste, usuarioTeste } from '../setup.test.db';
 
 beforeAll(async () => {
-    await setupTestDB();
+    await configurarBancoDeTeste();
 });
 
 afterAll(async () => {
-    await disconnectTestDB();
+    await desconectarBancoDeTeste();
 });
 
-describe('POST /api/tasks', () => {
+describe('POST /api/tarefas', () => {
     it('deve criar uma tarefa com dados válidos e retornar 201', async () => {
         // Arrange
         const novaTarefa = {
-            title: 'Estudar Jest',
-            description: 'Aprender a escrever testes unitários',
-            priority: 'high',
+            titulo: 'Estudar Jest',
+            descricao: 'Aprender a escrever testes unitários',
+            prioridade: 'high',
         };
 
         // Act
         const response = await request(app)
-            .post('/api/tasks')
+            .post('/api/tarefas')
             .send(novaTarefa);
 
         // Assert
@@ -503,18 +503,18 @@ describe('POST /api/tasks', () => {
         expect(response.status).toBe(StatusCodes.CREATED);
 
         // 2. Corpo da resposta contém os dados enviados
-        expect(response.body.title).toBe('Estudar Jest');
-        expect(response.body.description).toBe('Aprender a escrever testes unitários');
-        expect(response.body.priority).toBe('high');
+        expect(response.body.titulo).toBe('Estudar Jest');
+        expect(response.body.descricao).toBe('Aprender a escrever testes unitários');
+        expect(response.body.prioridade).toBe('high');
 
         // 3. Campos gerados automaticamente estão presentes
         expect(response.body).toHaveProperty('id');
-        expect(response.body).toHaveProperty('createdAt');
-        expect(response.body.userId).toBe(testUser.id);
+        expect(response.body).toHaveProperty('criadaEm');
+        expect(response.body.usuarioId).toBe(usuarioTeste.id);
 
         // 4. Tarefa foi salva no banco
-        const tarefaNoBanco = await prisma.task.findFirst({
-            where: { title: 'Estudar Jest' },
+        const tarefaNoBanco = await prisma.tarefa.findFirst({
+            where: { titulo: 'Estudar Jest' },
         });
         expect(tarefaNoBanco).not.toBeNull();
     });
@@ -527,23 +527,23 @@ Execute:
 npx jest task.routes.test.ts
 ```
 
-> **Checkpoint:** O teste deve passar. O Supertest fez uma requisição POST real para `/api/tasks`, o Express processou, o Prisma salvou no banco de teste, e verificamos tanto a resposta HTTP quanto o banco de dados.
+> **Checkpoint:** O teste deve passar. O Supertest fez uma requisição POST real para `/api/tarefas`, o Express processou, o Prisma salvou no banco de teste, e verificamos tanto a resposta HTTP quanto o banco de dados.
 
 Para comparar os dois níveis de teste:
 - **Teste unitário** (Parte 1): `formatarPrioridade('low')` → verificamos o retorno direto
-- **Teste de integração** (Parte 2): `request(app).post('/api/tasks').send({...})` → verificamos status, corpo e banco
+- **Teste de integração** (Parte 2): `request(app).post('/api/tarefas').send({...})` → verificamos status, corpo e banco
 
 ### 2.4 Segundo teste: complete as lacunas
 
 Adicione ao mesmo arquivo:
 
 ```typescript
-describe('GET /api/tasks', () => {
+describe('GET /api/tarefas', () => {
     it('deve listar as tarefas do usuário', async () => {
         // Arrange
         await request(app)
-            .post('/api/tasks')
-            .send({ title: 'Tarefa para listar', priority: 'low' });
+            .post('/api/tarefas')
+            .send({ titulo: 'Tarefa para listar', prioridade: 'low' });
 
         // Act
         const response = await request(app)
@@ -556,10 +556,10 @@ describe('GET /api/tasks', () => {
     });
 });
 
-describe('GET /api/tasks/:id', () => {
+describe('GET /api/tarefas/:id', () => {
     it('deve retornar 404 para tarefa inexistente', async () => {
         const response = await request(app)
-            .get('/api/tasks/99999');
+            .get('/api/tarefas/99999');
 
         expect(response.status).toBe(___); // ← COMPLETE: qual status para "não encontrado"?
         expect(response.body).toHaveProperty(___); // ← COMPLETE: qual campo da resposta de erro?
@@ -580,17 +580,17 @@ npx jest task.routes.test.ts
 
 ### 2.5 Terceiro teste de API: estatísticas (guiado)
 
-O *endpoint* `GET /api/tasks/stats` usa as mesmas funções que você testou na Parte 1, mas agora como parte de um fluxo HTTP completo. Adicione ao mesmo arquivo:
+O *endpoint* `GET /api/tarefas/estatisticas` usa as mesmas funções que você testou na Parte 1, mas agora como parte de um fluxo HTTP completo. Adicione ao mesmo arquivo:
 
 ```typescript
-describe('GET /api/tasks/stats', () => {
+describe('GET /api/tarefas/estatisticas', () => {
     it('deve retornar estatísticas corretas após criar tarefas', async () => {
         // Arrange: cria duas tarefas com prioridades diferentes
-        await request(app).post('/api/tasks').send({ title: 'Tarefa A', priority: 'high' });
-        await request(app).post('/api/tasks').send({ title: 'Tarefa B', priority: 'low' });
+        await request(app).post('/api/tarefas').send({ titulo: 'Tarefa A', prioridade: 'high' });
+        await request(app).post('/api/tarefas').send({ titulo: 'Tarefa B', prioridade: 'low' });
 
         // Act
-        const response = await request(app).get('/api/tasks/stats');
+        const response = await request(app).get('/api/tarefas/estatisticas');
 
         // Assert
         expect(response.status).toBe(StatusCodes.OK);
@@ -625,25 +625,25 @@ Execute e verifique que o teste passa. Observe a conexão: o campo `porPrioridad
 
 No mesmo arquivo, escreva testes para:
 
-**Cenário 1: PUT /api/tasks/:id**
+**Cenário 1: PUT /api/tarefas/:id**
 1. Crie uma tarefa via POST
 2. Atualize o título via PUT usando o ID retornado
 3. Verifique que o status é 200 e o título foi alterado
 
-**Cenário 2: DELETE /api/tasks/:id**
+**Cenário 2: DELETE /api/tarefas/:id**
 1. Crie uma tarefa via POST
 2. Delete via DELETE usando o ID retornado
 3. Verifique que o status é 204 (No Content)
 4. Tente buscar a tarefa deletada via GET (ela não deve mais existir)
 
-**Cenário 3: POST /api/tasks com título inválido**
+**Cenário 3: POST /api/tarefas com título inválido**
 1. Tente criar uma tarefa com título começando em número (ex: `"1 Tarefa inválida"`)
 2. Verifique o status code retornado (leia `server/src/controllers/task.controller.ts` e `server/src/errors/task/InvalidTaskNameError.ts`)
 
 **Referência:**
 - Para capturar o ID criado: `const { body } = await request(app).post(...).send({...}); const id = body.id;`
-- Para DELETE: `` request(app).delete(`/api/tasks/${id}`) ``
-- Para PUT: `` request(app).put(`/api/tasks/${id}`).send({ title: 'Novo título' }) ``
+- Para DELETE: `` request(app).delete(`/api/tarefas/${id}`) ``
+- Para PUT: `` request(app).put(`/api/tarefas/${id}`).send({ titulo: 'Novo título' }) ``
 
 ---
 
@@ -673,6 +673,15 @@ Adicione testes para `calcularEstatisticas` cobrindo:
 
 **Atenção ao matcher:** `calcularEstatisticas` retorna um objeto. Para comparar objetos, use `toEqual` em vez de `toBe`, como visto antes de iniciar a Parte 2.
 
+**Lembrete:** a função recebe uma lista de objetos com os campos `concluida` e `prioridade`. Exemplo:
+
+```typescript
+const tarefas = [
+  { concluida: true, prioridade: 'high' },
+  { concluida: false, prioridade: 'low' },
+];
+```
+
 ### Atividade 3: Testes unitários para `validarForcaSenha`
 
 Abra `server/src/utils/auth.utils.ts`, leia a função `validarForcaSenha` e crie `server/src/tests/services/auth.utils.test.ts` com testes para:
@@ -687,24 +696,24 @@ Abra `server/src/utils/auth.utils.ts`, leia a função `validarForcaSenha` e cri
 
 Crie `server/src/tests/routes/auth.routes.test.ts` com testes para:
 
-- `POST /api/auth/register` com dados válidos (deve retornar 201 e um token)
-- `POST /api/auth/register` com e-mail já existente (deve retornar erro)
-- `POST /api/auth/register` com e-mail inválido (ex: `"nao-e-um-email"`): qual status e mensagem você espera?
-- `POST /api/auth/register` com senha fraca (ex: `"abc"`): verifique o campo `message` da resposta
-- `POST /api/auth/login` com credenciais válidas (use `testUser.email` e `testUser.password`)
-- `POST /api/auth/login` com senha incorreta
+- `POST /api/autenticacao/registrar` com dados válidos (deve retornar 201 e um token)
+- `POST /api/autenticacao/registrar` com e-mail já existente (deve retornar erro)
+- `POST /api/autenticacao/registrar` com e-mail inválido (ex: `"nao-e-um-email"`): qual status e mensagem você espera?
+- `POST /api/autenticacao/registrar` com senha fraca (ex: `"abc"`): verifique o campo `message` da resposta
+- `POST /api/autenticacao/entrar` com credenciais válidas (use `usuarioTeste.email` e `usuarioTeste.senha`)
+- `POST /api/autenticacao/entrar` com senha incorreta
 
 > **Sobre verificar mensagens de erro:** verificar o status code (ex: `400`) é sempre uma boa asserção. Verificar o texto exato da mensagem (ex: `"Senha deve ter no mínimo 6 caracteres"`) é mais frágil: se alguém reformular o texto no futuro, o teste quebra mesmo sem nada estar errado no comportamento. Uma alternativa mais robusta é verificar apenas que o campo `message` existe, sem fixar o conteúdo.
 
-**Observação:** para estes testes, o *mock* do *middleware* não é necessário. As rotas `/register` e `/login` não exigem autenticação. Confirme em `server/src/routes/auth.routes.ts`.
+**Observação:** para estes testes, o *mock* do *middleware* não é necessário. As rotas `/registrar` e `/entrar` não exigem autenticação. Confirme em `server/src/routes/auth.routes.ts`.
 
-**Lembrete de estrutura:** assim como em `task.routes.test.ts`, este arquivo precisa de `beforeAll` e `afterAll` para configurar e desconectar o banco de teste. Use o mesmo padrão com `setupTestDB` e `disconnectTestDB` importados de `../setup.test.db`.
+**Lembrete de estrutura:** assim como em `task.routes.test.ts`, este arquivo precisa de `beforeAll` e `afterAll` para configurar e desconectar o banco de teste. Use o mesmo padrão com `configurarBancoDeTeste` e `desconectarBancoDeTeste` importados de `../setup.test.db`.
 
 ### Atividade 5: Testes de API para estatísticas
 
-Crie testes para o `GET /api/tasks/stats` em `task.routes.test.ts` (ou em um arquivo separado). Sugestões:
+Crie testes para o `GET /api/tarefas/estatisticas` em `task.routes.test.ts` (ou em um arquivo separado). Sugestões:
 
-- Crie algumas tarefas via POST antes de chamar o *endpoint* de stats
+- Crie algumas tarefas via POST antes de chamar o *endpoint* de estatísticas
 - Verifique que a resposta contém os campos `total`, `concluidas`, `pendentes`, `atrasadas`, `porPrioridade` e `vencendoEm7Dias`
 - Atualize uma tarefa como concluída e verifique se o contador `concluidas` muda
 - Crie uma tarefa com data de vencimento no passado e verifique se `atrasadas` aumenta

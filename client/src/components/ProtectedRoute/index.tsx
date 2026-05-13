@@ -1,18 +1,18 @@
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
-interface ProtectedRouteProps {
+interface RotaProtegidaProps {
     children: React.ReactNode;
 }
 
-export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
-    const { isAuthenticated, isLoading } = useAuth();
+export const ProtectedRoute = ({ children }: RotaProtegidaProps) => {
+    const { estaAutenticado, estaCarregando } = useAuth();
 
-    if (isLoading) {
+    if (estaCarregando) {
         return <div>Carregando...</div>;
     }
 
-    if (!isAuthenticated) {
+    if (!estaAutenticado) {
         return <Navigate to="/login" replace />;
     }
 

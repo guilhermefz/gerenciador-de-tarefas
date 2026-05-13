@@ -9,18 +9,18 @@ export function formatarPrioridade(prioridade: string): string {
 }
 
 export function estaAtrasada(
-    tarefa: { dueDate: Date | null; completed: boolean },
+    tarefa: { dataVencimento: Date | null; concluida: boolean },
     agora: Date = new Date(),
 ): boolean {
-    if (!tarefa.dueDate || tarefa.completed) return false;
+    if (!tarefa.dataVencimento || tarefa.concluida) return false;
 
-    return tarefa.dueDate < agora;
+    return tarefa.dataVencimento < agora;
 }
 
-export function diasParaVencimento(dueDate: Date | null, agora: Date = new Date()): number | null {
-    if (!dueDate) return null;
+export function diasParaVencimento(dataVencimento: Date | null, agora: Date = new Date()): number | null {
+    if (!dataVencimento) return null;
 
-    const diffMs = dueDate.getTime() - agora.getTime();
+    const diffMs = dataVencimento.getTime() - agora.getTime();
 
     return Math.ceil(diffMs / (1000 * 60 * 60 * 24));
 }
@@ -31,7 +31,7 @@ export function validarEmail(email: string): boolean {
 }
 
 export function calcularEstatisticas(
-    tarefas: Array<{ completed: boolean; priority?: string | null }>,
+    tarefas: Array<{ concluida: boolean; prioridade?: string | null }>,
 ): {
     total: number;
     concluidas: number;
@@ -39,12 +39,12 @@ export function calcularEstatisticas(
     porPrioridade: Record<string, number>;
 } {
     const total = tarefas.length;
-    const concluidas = tarefas.filter((t) => t.completed).length;
+    const concluidas = tarefas.filter((t) => t.concluida).length;
     const pendentes = total - concluidas;
     const porPrioridade: Record<string, number> = {};
 
     for (const t of tarefas) {
-        const p = t.priority ?? 'sem_prioridade';
+        const p = t.prioridade ?? 'sem_prioridade';
         porPrioridade[p] = (porPrioridade[p] ?? 0) + 1;
     }
 

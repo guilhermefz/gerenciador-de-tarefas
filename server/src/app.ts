@@ -7,11 +7,11 @@ dotenv.config({
 });
 
 import express from 'express';
-import { authenticate } from './middlewares/auth.middleware';
+import { autenticar } from './middlewares/autenticacao.middleware';
 import { errorHandler } from './middlewares/error.middleware';
-import authRoutes from './routes/auth.routes';
-import taskRoutes from './routes/task.routes';
-import testRoutes from './routes/test.routes';
+import autenticacaoRoutes from './routes/autenticacao.routes';
+import tarefaRoutes from './routes/tarefa.routes';
+import testeRoutes from './routes/teste.routes';
 
 if (process.env.NODE_ENV === 'test' && process.env.DATABASE_URL !== 'file:./dev-test.db') {
     throw new Error('Using non test database in a test environment!');
@@ -25,11 +25,11 @@ if (process.env.NODE_ENV !== 'test') {
     app.use(morgan('dev'));
 }
 
-app.use('/api/auth', authRoutes);
-app.use('/api/tasks', authenticate, taskRoutes);
+app.use('/api/autenticacao', autenticacaoRoutes);
+app.use('/api/tarefas', autenticar, tarefaRoutes);
 
 if (process.env.NODE_ENV === 'test') {
-    app.use('/api/test', testRoutes);
+    app.use('/api/teste', testeRoutes);
 }
 
 app.use(errorHandler);

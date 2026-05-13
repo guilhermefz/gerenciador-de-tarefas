@@ -1,50 +1,50 @@
 import { CheckCircle, AlertTriangle, Flag, CalendarDays, Pencil, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { deleteById, getById } from '../../api/index';
-import { Task } from '../../api/types';
+import { deletarPorId, buscarPorId } from '../../api/index';
+import { Tarefa } from '../../api/types';
 import { useAuth } from '../../context/AuthContext';
-import { getPriorityColor, getPriorityLabel } from '../../utils';
+import { obterCorPrioridade, obterRotuloPrioridade } from '../../utils';
 
 export const TaskDetail = () => {
     const { id } = useParams();
-    const [task, setTask] = useState<Task | null>(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
+    const [tarefa, setTarefa] = useState<Tarefa | null>(null);
+    const [carregando, setCarregando] = useState(true);
+    const [erro, setErro] = useState('');
     const { token } = useAuth();
     const navigate = useNavigate();
 
     useEffect(() => {
-        const fetchTask = async () => {
+        const buscarTarefa = async () => {
             if (!token || !id) return;
 
             try {
-                const task = await getById(+id, token);
-                setTask(task);
+                const dados = await buscarPorId(+id, token);
+                setTarefa(dados);
             } catch (error) {
                 console.error(error);
-                setError('Erro ao carregar a tarefa.');
+                setErro('Erro ao carregar a tarefa.');
             } finally {
-                setLoading(false);
+                setCarregando(false);
             }
         };
 
-        fetchTask();
+        buscarTarefa();
     }, [id, token]);
 
-    const handleDelete = async () => {
+    const handleDeletar = async () => {
         if (!token || !id) return;
 
         try {
-            await deleteById(+id, token);
+            await deletarPorId(+id, token);
             navigate('/tasks');
         } catch (error) {
             console.error(error);
-            setError('Erro ao excluir tarefa.');
+            setErro('Erro ao excluir tarefa.');
         }
     };
 
-    if (loading) {
+    if (carregando) {
         return (
             <div className="flex justify-center items-center min-h-[calc(100vh-68px)] bg-slate-900 text-white">
                 <span className="text-lg animate-pulse">Carregando detalhes...</span>
@@ -52,7 +52,7 @@ export const TaskDetail = () => {
         );
     }
 
-    if (!task) {
+    if (!tarefa) {
         return (
             <div className="flex justify-center items-center min-h-[calc(100vh-68px)] bg-slate-900 text-red-400">
                 Tarefa não encontrada.
@@ -63,17 +63,17 @@ export const TaskDetail = () => {
     return (
         <div className="flex min-h-[calc(100vh-68px)] items-center justify-center bg-slate-900 px-6 py-10">
             <div className="w-full max-w-3xl bg-slate-950 rounded-2xl p-8 shadow-lg text-white">
-                <h2 className="text-3xl font-bold text-indigo-300 mb-6" data-testid="task-title">{task.title}</h2>
+                <h2 className="text-3xl font-bold text-indigo-300 mb-6" data-testid="task-title">{tarefa.titulo}</h2>
 
-                {task.description && (
+                {tarefa.descricao && (
                     <p className="text-slate-300 mb-8 text-lg whitespace-pre-wrap">
-                        {task.description}
+                        {tarefa.descricao}
                     </p>
                 )}
 
                 <div className="space-y-5 text-slate-400 text-sm mb-8">
                     <div className="flex items-center gap-3" data-testid="task-status">
-                        {task.completed ? (
+                        {tarefa.concluida ? (
                             <>
                                 <CheckCircle size={20} className="text-green-400" />
                                 <span className="text-green-400 font-semibold">Concluída</span>
@@ -87,16 +87,16 @@ export const TaskDetail = () => {
                     </div>
 
                     <div className="flex items-center gap-3" data-testid="task-priority">
-                        <Flag size={20} className={getPriorityColor(task.priority)} />
-                        <span className={`${getPriorityColor(task.priority)} font-semibold`}>
-                            Prioridade: {getPriorityLabel(task.priority)}
+                        <Flag size={20} className={obterCorPrioridade(tarefa.prioridade)} />
+                        <span className={`${obterCorPrioridade(tarefa.prioridade)} font-semibold`}>
+                            Prioridade: {obterRotuloPrioridade(tarefa.prioridade)}
                         </span>
                     </div>
 
-                    {task.dueDate && (
+                    {tarefa.dataVencimento && (
                         <div className="flex items-center gap-3" data-testid="task-due-date">
                             <CalendarDays size={20} />
-                            <span>Prazo: {new Date(task.dueDate).toLocaleDateString('pt-BR')}</span>
+                            <span>Prazo: {new Date(tarefa.dataVencimento).toLocaleDateString('pt-BR')}</span>
                         </div>
                     )}
                 </div>
@@ -110,7 +110,7 @@ export const TaskDetail = () => {
                         <Pencil size={18} /> Editar
                     </button>
                     <button
-                        onClick={handleDelete}
+                        onClick={handleDeletar}
                         data-testid="delete-button"
                         className="flex items-center gap-2 bg-red-600 hover:bg-red-700 text-white px-5 py-3 rounded-lg transition font-semibold"
                     >
@@ -118,8 +118,8 @@ export const TaskDetail = () => {
                     </button>
                 </div>
 
-                {error && (
-                    <p className="mt-6 text-red-400 font-semibold text-center text-sm" data-testid="error-message">{error}</p>
+                {erro && (
+                    <p className="mt-6 text-red-400 font-semibold text-center text-sm" data-testid="error-message">{erro}</p>
                 )}
             </div>
         </div>

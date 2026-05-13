@@ -1,39 +1,39 @@
 import { ClipboardList, AlertTriangle, RotateCcw } from 'lucide-react';
 import { useEffect, useState, useCallback } from 'react';
 import { Link } from 'react-router-dom';
-import { get } from '../../api/index';
-import { Task } from '../../api/types';
+import { buscar } from '../../api/index';
+import { Tarefa } from '../../api/types';
 import { TaskCard } from '../../components/TaskCard';
 import { useAuth } from '../../context/AuthContext';
 
 export const TaskList = () => {
-    const [tasks, setTasks] = useState<Task[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+    const [tarefas, setTarefas] = useState<Tarefa[]>([]);
+    const [estaCarregando, setEstaCarregando] = useState(true);
+    const [erro, setErro] = useState<string | null>(null);
     const { token } = useAuth();
 
-    const fetchTasks = useCallback(async () => {
+    const buscarTarefas = useCallback(async () => {
         if (!token) return;
 
-        setIsLoading(true);
-        setError(null);
+        setEstaCarregando(true);
+        setErro(null);
 
         try {
-            const data = await get(token);
-            setTasks(data);
+            const dados = await buscar(token);
+            setTarefas(dados);
         } catch (error) {
             console.error('Erro ao buscar tarefas:', error);
-            setError('Não foi possível carregar as tarefas.');
+            setErro('Não foi possível carregar as tarefas.');
         } finally {
-            setIsLoading(false);
+            setEstaCarregando(false);
         }
     }, [token]);
 
     useEffect(() => {
-        fetchTasks();
-    }, [fetchTasks]);
+        buscarTarefas();
+    }, [buscarTarefas]);
 
-    if (isLoading) {
+    if (estaCarregando) {
         return (
             <div className="flex justify-center items-center min-h-[calc(100vh-68px)] bg-slate-900 text-white">
                 <span className="text-lg animate-pulse">Carregando tarefas...</span>
@@ -41,13 +41,13 @@ export const TaskList = () => {
         );
     }
 
-    if (error) {
+    if (erro) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[calc(100vh-68px)] bg-slate-900 text-white px-4 text-center">
                 <AlertTriangle size={48} className="text-yellow-500 mb-4" />
-                <p className="text-lg font-medium mb-2">{error}</p>
+                <p className="text-lg font-medium mb-2">{erro}</p>
                 <button
-                    onClick={fetchTasks}
+                    onClick={buscarTarefas}
                     className="flex items-center gap-2 bg-indigo-700 hover:bg-indigo-800 text-white px-4 py-2 rounded-lg transition mt-2"
                 >
                     <RotateCcw size={18} /> Tentar novamente
@@ -71,12 +71,12 @@ export const TaskList = () => {
             </div>
 
             <div className="max-w-4xl mx-auto space-y-6" data-testid="task-list">
-                {tasks.length === 0 ? (
+                {tarefas.length === 0 ? (
                     <p className="text-center text-slate-400 text-lg" data-testid="empty-state">
                         Nenhuma tarefa encontrada. Crie sua primeira tarefa!
                     </p>
                 ) : (
-                    tasks.map((task) => <TaskCard task={task} key={task.id} />)
+                    tarefas.map((tarefa) => <TaskCard tarefa={tarefa} key={tarefa.id} />)
                 )}
             </div>
         </div>

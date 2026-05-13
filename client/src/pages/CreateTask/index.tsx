@@ -1,39 +1,39 @@
 import { CheckCircle, AlertCircle, XCircle } from 'lucide-react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { create } from '../../api/index';
+import { criar } from '../../api/index';
 import { useAuth } from '../../context/AuthContext';
 
 export const CreateTask = () => {
-    const [title, setTitle] = useState('');
-    const [description, setDescription] = useState('');
-    const [dueDate, setDueDate] = useState<string>('');
-    const [priority, setPriority] = useState<'low' | 'medium' | 'high'>('medium');
-    const [error, setError] = useState('');
+    const [titulo, setTitulo] = useState('');
+    const [descricao, setDescricao] = useState('');
+    const [dataVencimento, setDataVencimento] = useState<string>('');
+    const [prioridade, setPrioridade] = useState<'low' | 'medium' | 'high'>('medium');
+    const [erro, setErro] = useState('');
     const { token } = useAuth();
     const navigate = useNavigate();
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        setError('');
+        setErro('');
 
         if (!token) {
-            setError('Usuário não autenticado.');
+            setErro('Usuário não autenticado.');
 
             return;
         }
 
         try {
-            await create({ title, description, dueDate: dueDate || undefined, priority }, token);
+            await criar({ titulo, descricao, dataVencimento: dataVencimento || undefined, prioridade }, token);
             navigate('/tasks');
         } catch (err) {
             console.error(err);
-            setError('Falha ao criar a tarefa. Tente novamente.');
+            setErro('Falha ao criar a tarefa. Tente novamente.');
         }
     };
 
-    const PriorityIcon = (): JSX.Element | null => {
-        switch (priority) {
+    const IconePrioridade = (): JSX.Element | null => {
+        switch (prioridade) {
             case 'low':
                 return <CheckCircle className="text-green-500" size={20} />;
             case 'medium':
@@ -50,19 +50,19 @@ export const CreateTask = () => {
             <div className="w-full max-w-md bg-slate-950 text-white p-8 rounded-2xl shadow-lg">
                 <h2 className="text-3xl font-bold text-center mb-6">Criar Nova Tarefa</h2>
 
-                {error && <p className="mb-4 text-red-400 text-sm text-center">{error}</p>}
+                {erro && <p className="mb-4 text-red-400 text-sm text-center">{erro}</p>}
 
                 <form onSubmit={handleSubmit} className="space-y-5" data-testid="task-form">
                     <div>
-                        <label htmlFor="title" className="block text-sm font-medium mb-1">
+                        <label htmlFor="titulo" className="block text-sm font-medium mb-1">
                             Título
                         </label>
                         <input
-                            id="title"
-                            name="title"
+                            id="titulo"
+                            name="titulo"
                             type="text"
-                            value={title}
-                            onChange={(e) => setTitle(e.target.value)}
+                            value={titulo}
+                            onChange={(e) => setTitulo(e.target.value)}
                             required
                             placeholder="Digite o título da tarefa"
                             data-testid="title-input"
@@ -71,14 +71,14 @@ export const CreateTask = () => {
                     </div>
 
                     <div>
-                        <label htmlFor="description" className="block text-sm font-medium mb-1">
+                        <label htmlFor="descricao" className="block text-sm font-medium mb-1">
                             Descrição
                         </label>
                         <textarea
-                            id="description"
-                            name="description"
-                            value={description}
-                            onChange={(e) => setDescription(e.target.value)}
+                            id="descricao"
+                            name="descricao"
+                            value={descricao}
+                            onChange={(e) => setDescricao(e.target.value)}
                             rows={4}
                             placeholder="Descreva os detalhes da tarefa (opcional)"
                             data-testid="description-input"
@@ -87,32 +87,32 @@ export const CreateTask = () => {
                     </div>
 
                     <div>
-                        <label htmlFor="dueDate" className="block text-sm font-medium mb-1">
+                        <label htmlFor="dataVencimento" className="block text-sm font-medium mb-1">
                             Data de Vencimento
                         </label>
                         <input
-                            id="dueDate"
-                            name="dueDate"
+                            id="dataVencimento"
+                            name="dataVencimento"
                             type="date"
-                            value={dueDate}
-                            onChange={(e) => setDueDate(e.target.value)}
+                            value={dataVencimento}
+                            onChange={(e) => setDataVencimento(e.target.value)}
                             data-testid="duedate-input"
                             className="w-full px-4 py-2 rounded-lg bg-slate-700 text-white border border-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-600"
                         />
                     </div>
 
                     <div>
-                        <label htmlFor="priority" className="block text-sm font-medium mb-1">
+                        <label htmlFor="prioridade" className="block text-sm font-medium mb-1">
                             Prioridade
                         </label>
                         <div className="flex items-center space-x-2">
-                            <PriorityIcon />
+                            <IconePrioridade />
                             <select
-                                id="priority"
-                                name="priority"
-                                value={priority}
+                                id="prioridade"
+                                name="prioridade"
+                                value={prioridade}
                                 onChange={(e) =>
-                                    setPriority(e.target.value as 'low' | 'medium' | 'high')
+                                    setPrioridade(e.target.value as 'low' | 'medium' | 'high')
                                 }
                                 data-testid="priority-select"
                                 className="flex-1 px-4 py-2 rounded-lg bg-slate-700 text-white border border-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-600"

@@ -1,22 +1,22 @@
 import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
-import { InvalidTaskNameError } from '../errors/task/InvalidTaskNameError';
-import { TaskNotFoundError } from '../errors/task/TaskNotFoundError';
-import { TaskService } from '../services/task.service';
+import { NomeTarefaInvalidoError } from '../errors/task/NomeTarefaInvalidoError';
+import { TarefaNaoEncontradaError } from '../errors/task/TarefaNaoEncontradaError';
+import { TarefaService } from '../services/tarefa.service';
 
-export const createTask = async (req: Request, res: Response): Promise<void> => {
-    const userId = req.userId;
-    if (!userId) {
+export const criarTarefa = async (req: Request, res: Response): Promise<void> => {
+    const usuarioId = req.usuarioId;
+    if (!usuarioId) {
         res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Não autorizado' });
 
         return;
     }
 
     try {
-        const task = await TaskService.createTask(userId, req.body);
-        res.status(StatusCodes.CREATED).json(task);
+        const tarefa = await TarefaService.criarTarefa(usuarioId, req.body);
+        res.status(StatusCodes.CREATED).json(tarefa);
     } catch (error) {
-        if (error instanceof InvalidTaskNameError) {
+        if (error instanceof NomeTarefaInvalidoError) {
             res.status(StatusCodes.BAD_REQUEST).json({ message: error.message });
         } else {
             console.error('Erro ao criar tarefa:', error);
@@ -25,36 +25,36 @@ export const createTask = async (req: Request, res: Response): Promise<void> => 
     }
 };
 
-export const getTasks = async (req: Request, res: Response): Promise<void> => {
-    const userId = req.userId;
-    if (!userId) {
+export const buscarTarefas = async (req: Request, res: Response): Promise<void> => {
+    const usuarioId = req.usuarioId;
+    if (!usuarioId) {
         res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Não autorizado' });
 
         return;
     }
 
     try {
-        const tasks = await TaskService.getTasks(userId, req.query);
-        res.json(tasks);
+        const tarefas = await TarefaService.buscarTarefas(usuarioId, req.query);
+        res.json(tarefas);
     } catch (error) {
         console.error('Erro ao buscar tarefas:', error);
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Erro no servidor' });
     }
 };
 
-export const getTaskById = async (req: Request, res: Response): Promise<void> => {
-    const userId = req.userId;
-    if (!userId) {
+export const buscarTarefaPorId = async (req: Request, res: Response): Promise<void> => {
+    const usuarioId = req.usuarioId;
+    if (!usuarioId) {
         res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Não autorizado' });
 
         return;
     }
 
     try {
-        const task = await TaskService.getTaskById(userId, parseInt(req.params.id));
-        res.json(task);
+        const tarefa = await TarefaService.buscarTarefaPorId(usuarioId, parseInt(req.params.id));
+        res.json(tarefa);
     } catch (error) {
-        if (error instanceof TaskNotFoundError) {
+        if (error instanceof TarefaNaoEncontradaError) {
             res.status(StatusCodes.NOT_FOUND).json({ message: error.message });
         } else {
             console.error('Erro ao buscar tarefa:', error);
@@ -63,21 +63,21 @@ export const getTaskById = async (req: Request, res: Response): Promise<void> =>
     }
 };
 
-export const updateTask = async (req: Request, res: Response): Promise<void> => {
-    const userId = req.userId;
-    if (!userId) {
+export const atualizarTarefa = async (req: Request, res: Response): Promise<void> => {
+    const usuarioId = req.usuarioId;
+    if (!usuarioId) {
         res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Não autorizado' });
 
         return;
     }
 
     try {
-        const updatedTask = await TaskService.updateTask(userId, parseInt(req.params.id), req.body);
-        res.json(updatedTask);
+        const tarefaAtualizada = await TarefaService.atualizarTarefa(usuarioId, parseInt(req.params.id), req.body);
+        res.json(tarefaAtualizada);
     } catch (error) {
-        if (error instanceof TaskNotFoundError) {
+        if (error instanceof TarefaNaoEncontradaError) {
             res.status(StatusCodes.NOT_FOUND).json({ message: error.message });
-        } else if (error instanceof InvalidTaskNameError) {
+        } else if (error instanceof NomeTarefaInvalidoError) {
             res.status(StatusCodes.BAD_REQUEST).json({ message: error.message });
         } else {
             console.error('Erro ao atualizar tarefa:', error);
@@ -86,36 +86,36 @@ export const updateTask = async (req: Request, res: Response): Promise<void> => 
     }
 };
 
-export const getStats = async (req: Request, res: Response): Promise<void> => {
-    const userId = req.userId;
-    if (!userId) {
+export const buscarEstatisticas = async (req: Request, res: Response): Promise<void> => {
+    const usuarioId = req.usuarioId;
+    if (!usuarioId) {
         res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Não autorizado' });
 
         return;
     }
 
     try {
-        const stats = await TaskService.getStats(userId);
-        res.json(stats);
+        const estatisticas = await TarefaService.buscarEstatisticas(usuarioId);
+        res.json(estatisticas);
     } catch (error) {
         console.error('Erro ao buscar estatísticas:', error);
         res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ message: 'Erro no servidor' });
     }
 };
 
-export const deleteTask = async (req: Request, res: Response): Promise<void> => {
-    const userId = req.userId;
-    if (!userId) {
+export const deletarTarefa = async (req: Request, res: Response): Promise<void> => {
+    const usuarioId = req.usuarioId;
+    if (!usuarioId) {
         res.status(StatusCodes.UNAUTHORIZED).json({ message: 'Não autorizado' });
 
         return;
     }
 
     try {
-        await TaskService.deleteTask(userId, parseInt(req.params.id));
+        await TarefaService.deletarTarefa(usuarioId, parseInt(req.params.id));
         res.status(StatusCodes.NO_CONTENT).send();
     } catch (error) {
-        if (error instanceof TaskNotFoundError) {
+        if (error instanceof TarefaNaoEncontradaError) {
             res.status(StatusCodes.NOT_FOUND).json({ message: error.message });
         } else {
             console.error('Erro ao deletar tarefa:', error);

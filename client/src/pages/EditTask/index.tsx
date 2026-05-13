@@ -1,70 +1,70 @@
 import { AlertTriangle, Pencil, CheckCircle, AlertCircle, XCircle } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { getById, update } from '../../api/index';
+import { buscarPorId, atualizar } from '../../api/index';
 import { useAuth } from '../../context/AuthContext';
 
 export const EditTask = () => {
     const { id } = useParams();
-    const [title, setTitle] = useState('');
-    const [description, setDescription] = useState('');
-    const [dueDate, setDueDate] = useState('');
-    const [priority, setPriority] = useState<'low' | 'medium' | 'high'>('medium');
-    const [completed, setCompleted] = useState(false);
-    const [error, setError] = useState('');
+    const [titulo, setTitulo] = useState('');
+    const [descricao, setDescricao] = useState('');
+    const [dataVencimento, setDataVencimento] = useState('');
+    const [prioridade, setPrioridade] = useState<'low' | 'medium' | 'high'>('medium');
+    const [concluida, setConcluida] = useState(false);
+    const [erro, setErro] = useState('');
     const { token } = useAuth();
     const navigate = useNavigate();
 
     useEffect(() => {
-        const fetchTask = async () => {
+        const buscarTarefa = async () => {
             if (!token || !id) return;
 
             try {
-                const task = await getById(+id, token);
-                setTitle(task.title);
-                setDescription(task.description || '');
-                setDueDate(task.dueDate?.split('T')[0] || '');
-                setPriority(task.priority || 'medium');
-                setCompleted(task.completed);
+                const tarefa = await buscarPorId(+id, token);
+                setTitulo(tarefa.titulo);
+                setDescricao(tarefa.descricao || '');
+                setDataVencimento(tarefa.dataVencimento?.split('T')[0] || '');
+                setPrioridade(tarefa.prioridade || 'medium');
+                setConcluida(tarefa.concluida);
             } catch (error) {
                 console.error(error);
-                setError('Erro ao carregar tarefa.');
+                setErro('Erro ao carregar tarefa.');
             }
         };
 
-        fetchTask();
+        buscarTarefa();
     }, [id, token]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setError('');
+        setErro('');
 
         try {
             if (!token) {
-                setError('Usuário não autenticado.');
+                setErro('Usuário não autenticado.');
 
                 return;
             }
             if (!id) {
-                setError('Tarefa não identificada.');
+                setErro('Tarefa não identificada.');
 
                 return;
             }
 
-            await update(
+            await atualizar(
                 +id,
-                { title, description, dueDate: dueDate || undefined, priority, completed },
+                { titulo, descricao, dataVencimento: dataVencimento || undefined, prioridade, concluida },
                 token,
             );
             navigate('/tasks');
         } catch (error) {
             console.error(error);
-            setError('Erro ao atualizar tarefa. Tente novamente.');
+            setErro('Erro ao atualizar tarefa. Tente novamente.');
         }
     };
 
-    const PriorityIcon = (): JSX.Element | null => {
-        switch (priority) {
+    const IconePrioridade = (): JSX.Element | null => {
+        switch (prioridade) {
             case 'low':
                 return <CheckCircle className="text-green-500" size={20} />;
             case 'medium':
@@ -83,23 +83,23 @@ export const EditTask = () => {
                     <Pencil size={24} /> Editar Tarefa
                 </h2>
 
-                {error && (
+                {erro && (
                     <div className="mb-4 flex items-center gap-2 text-red-400 bg-red-900 p-3 rounded-md" data-testid="error-message">
                         <AlertTriangle size={18} />
-                        <span>{error}</span>
+                        <span>{erro}</span>
                     </div>
                 )}
 
                 <form onSubmit={handleSubmit} className="space-y-5" data-testid="task-form">
                     <div>
-                        <label htmlFor="title" className="block text-sm font-medium mb-1">
+                        <label htmlFor="titulo" className="block text-sm font-medium mb-1">
                             Título
                         </label>
                         <input
-                            id="title"
+                            id="titulo"
                             type="text"
-                            value={title}
-                            onChange={(e) => setTitle(e.target.value)}
+                            value={titulo}
+                            onChange={(e) => setTitulo(e.target.value)}
                             placeholder="Digite o título da tarefa"
                             required
                             data-testid="title-input"
@@ -108,13 +108,13 @@ export const EditTask = () => {
                     </div>
 
                     <div>
-                        <label htmlFor="description" className="block text-sm font-medium mb-1">
+                        <label htmlFor="descricao" className="block text-sm font-medium mb-1">
                             Descrição
                         </label>
                         <textarea
-                            id="description"
-                            value={description}
-                            onChange={(e) => setDescription(e.target.value)}
+                            id="descricao"
+                            value={descricao}
+                            onChange={(e) => setDescricao(e.target.value)}
                             placeholder="Detalhes da tarefa (opcional)"
                             rows={4}
                             data-testid="description-input"
@@ -123,30 +123,30 @@ export const EditTask = () => {
                     </div>
 
                     <div>
-                        <label htmlFor="dueDate" className="block text-sm font-medium mb-1">
+                        <label htmlFor="dataVencimento" className="block text-sm font-medium mb-1">
                             Data de Vencimento
                         </label>
                         <input
-                            id="dueDate"
+                            id="dataVencimento"
                             type="date"
-                            value={dueDate}
-                            onChange={(e) => setDueDate(e.target.value)}
+                            value={dataVencimento}
+                            onChange={(e) => setDataVencimento(e.target.value)}
                             data-testid="duedate-input"
                             className="w-full px-4 py-2 rounded-lg bg-slate-700 text-white border border-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-600"
                         />
                     </div>
 
                     <div>
-                        <label htmlFor="priority" className="block text-sm font-medium mb-1">
+                        <label htmlFor="prioridade" className="block text-sm font-medium mb-1">
                             Prioridade
                         </label>
                         <div className="flex items-center space-x-2">
-                            <PriorityIcon />
+                            <IconePrioridade />
                             <select
-                                id="priority"
-                                value={priority}
+                                id="prioridade"
+                                value={prioridade}
                                 onChange={(e) =>
-                                    setPriority(e.target.value as 'low' | 'medium' | 'high')
+                                    setPrioridade(e.target.value as 'low' | 'medium' | 'high')
                                 }
                                 data-testid="priority-select"
                                 className="flex-1 px-4 py-2 rounded-lg bg-slate-700 text-white border border-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-600"
@@ -160,14 +160,14 @@ export const EditTask = () => {
 
                     <div className="flex items-center gap-2">
                         <input
-                            id="completed"
+                            id="concluida"
                             type="checkbox"
-                            checked={completed}
-                            onChange={(e) => setCompleted(e.target.checked)}
+                            checked={concluida}
+                            onChange={(e) => setConcluida(e.target.checked)}
                             data-testid="completed-checkbox"
                             className="w-5 h-5 accent-indigo-600"
                         />
-                        <label htmlFor="completed" className="font-medium">
+                        <label htmlFor="concluida" className="font-medium">
                             Tarefa concluída
                         </label>
                     </div>

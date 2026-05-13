@@ -10,25 +10,25 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  password  String
-  name      String
-  tasks     Task[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model Usuario {
+  id           Int      @id @default(autoincrement())
+  email        String   @unique
+  senha        String
+  nome         String
+  tarefas      Tarefa[]
+  criadoEm     DateTime @default(now())
+  atualizadoEm DateTime @updatedAt
 }
 
-model Task {
-  id          Int      @id @default(autoincrement())
-  title       String
-  description String?
-  completed   Boolean  @default(false)
-  dueDate     DateTime?
-  priority    String?  @default("medium")
-  userId      Int
-  user        User     @relation(fields: [userId], references: [id])
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+model Tarefa {
+  id             Int       @id @default(autoincrement())
+  titulo         String
+  descricao      String?
+  concluida      Boolean   @default(false)
+  dataVencimento DateTime?
+  prioridade     String?   @default("medium")
+  usuarioId      Int
+  usuario        Usuario   @relation(fields: [usuarioId], references: [id])
+  criadaEm       DateTime  @default(now())
+  atualizadaEm   DateTime  @updatedAt
 }

@@ -1,79 +1,78 @@
-// src/context/AuthContext.tsx
 import { createContext, useContext, ReactNode, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import * as auth from '../api/auth';
-import { User } from '../api/types';
+import * as auth from '../api/autenticacao';
+import { Usuario } from '../api/types';
 
-interface AuthContextType {
-    user: User | null;
+interface ContextoAutenticacaoTipo {
+    usuario: Usuario | null;
     token: string | null;
-    login: (email: string, password: string) => Promise<void>;
-    logout: () => void;
-    isAuthenticated: boolean;
-    isLoading: boolean;
+    fazerLogin: (email: string, senha: string) => Promise<void>;
+    sair: () => void;
+    estaAutenticado: boolean;
+    estaCarregando: boolean;
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const ContextoAutenticacao = createContext<ContextoAutenticacaoTipo | undefined>(undefined);
 
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
-    const [user, setUser] = useState<User | null>(null);
+export const ProvedorAutenticacao = ({ children }: { children: ReactNode }) => {
+    const [usuario, setUsuario] = useState<Usuario | null>(null);
     const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
-    const [isLoading, setIsLoading] = useState(true);
+    const [estaCarregando, setEstaCarregando] = useState(true);
     const navigate = useNavigate();
 
     useEffect(() => {
-        const validateToken = async () => {
+        const verificarToken = async () => {
             try {
-                if (token && isTokenExpired(token)) {
+                if (token && tokenExpirou(token)) {
                     throw new Error('O token expirou');
                 }
 
                 if (token) {
-                    const userData = await auth.validateToken(token);
-                    setUser(userData);
+                    const dadosUsuario = await auth.validarToken(token);
+                    setUsuario(dadosUsuario);
 
-                    const newToken = await getNewTokenIfNeeded(token);
-                    if (newToken) {
-                        setToken(newToken);
-                        localStorage.setItem('token', newToken);
+                    const novoToken = await renovarTokenSeNecessario(token);
+                    if (novoToken) {
+                        setToken(novoToken);
+                        localStorage.setItem('token', novoToken);
                     }
                 }
             } catch (error) {
                 console.error('Validação do token falhou:', error);
-                logout();
+                sair();
             } finally {
-                setIsLoading(false);
+                setEstaCarregando(false);
             }
         };
 
-        validateToken();
+        verificarToken();
     }, [token]);
 
-    const login = async (email: string, password: string) => {
+    const fazerLogin = async (email: string, senha: string) => {
         try {
-            setIsLoading(true);
-            const { user: userData, token: authToken } = await auth.login(email, password);
-            setUser(userData);
-            setToken(authToken);
-            localStorage.setItem('token', authToken);
+            setEstaCarregando(true);
+            const { usuario: dadosUsuario, token: tokenAutenticacao } = await auth.entrar(email, senha);
+            setUsuario(dadosUsuario);
+            setToken(tokenAutenticacao);
+            localStorage.setItem('token', tokenAutenticacao);
         } catch (error) {
             console.error('Falha no login:', error);
             throw error;
         } finally {
-            setIsLoading(false);
+            setEstaCarregando(false);
         }
     };
 
-    const logout = () => {
-        setUser(null);
+    const sair = () => {
+        setUsuario(null);
         setToken(null);
         localStorage.removeItem('token');
         navigate('/login');
     };
 
-    const isTokenExpired = (token: string): boolean => {
+    const tokenExpirou = (tokenAtual: string): boolean => {
         try {
-            const payload = JSON.parse(atob(token.split('.')[1]));
+            const payload = JSON.parse(atob(tokenAtual.split('.')[1]));
             if (!payload.exp) return true;
 
             return Date.now() >= payload.exp * 1000;
@@ -84,18 +83,18 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
     };
 
-    const getNewTokenIfNeeded = async (currentToken: string): Promise<string | null> => {
-        const tokenExpirationMargin = 15 * 60 * 1000;
+    const renovarTokenSeNecessario = async (tokenAtual: string): Promise<string | null> => {
+        const margemExpiracao = 15 * 60 * 1000;
 
         try {
-            const payload = JSON.parse(atob(currentToken.split('.')[1]));
+            const payload = JSON.parse(atob(tokenAtual.split('.')[1]));
             if (!payload.exp) return null;
 
-            const expiresAt = payload.exp * 1000;
-            if (Date.now() > expiresAt - tokenExpirationMargin) {
-                const newToken = await auth.refreshToken(currentToken);
+            const expiraEm = payload.exp * 1000;
+            if (Date.now() > expiraEm - margemExpiracao) {
+                const novoToken = await auth.renovarToken(tokenAtual);
 
-                return newToken;
+                return novoToken;
             }
         } catch (error) {
             console.error('Erro ao gerar novo token:', error);
@@ -104,23 +103,23 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         return null;
     };
 
-    const value = {
-        user,
+    const valor = {
+        usuario,
         token,
-        login,
-        logout,
-        isAuthenticated: !!user && !!token,
-        isLoading,
+        fazerLogin,
+        sair,
+        estaAutenticado: !!usuario && !!token,
+        estaCarregando,
     };
 
-    return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+    return <ContextoAutenticacao.Provider value={valor}>{children}</ContextoAutenticacao.Provider>;
 };
 
-export const useAuth = (): AuthContextType => {
-    const context = useContext(AuthContext);
-    if (context === undefined) {
-        throw new Error('useAuth precisa estar dentro de um AuthProvider');
+export const useAuth = (): ContextoAutenticacaoTipo => {
+    const contexto = useContext(ContextoAutenticacao);
+    if (contexto === undefined) {
+        throw new Error('useAuth precisa estar dentro de um ProvedorAutenticacao');
     }
 
-    return context;
+    return contexto;
 };

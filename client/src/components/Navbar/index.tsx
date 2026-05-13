@@ -4,12 +4,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 
 export const Navbar = () => {
-    const { user, isAuthenticated, logout } = useAuth();
-    const [menuOpen, setMenuOpen] = useState(false);
+    const { usuario, estaAutenticado, sair } = useAuth();
+    const [menuAberto, setMenuAberto] = useState(false);
     const navigate = useNavigate();
 
     const handleLogoClick = () => {
-        if (isAuthenticated) {
+        if (estaAutenticado) {
             navigate('/tasks');
         } else {
             navigate('/');
@@ -27,24 +27,24 @@ export const Navbar = () => {
                 </button>
 
                 <ul className="flex items-center gap-2 sm:gap-4 relative">
-                    {isAuthenticated ? (
+                    {estaAutenticado ? (
                         <li className="relative">
                             <button
-                                onClick={() => setMenuOpen(!menuOpen)}
+                                onClick={() => setMenuAberto(!menuAberto)}
                                 data-testid="user-name"
                                 className="flex items-center gap-2 px-4 py-2 bg-slate-800 rounded-md hover:bg-slate-700 transition text-sm font-medium"
                             >
-                                {user?.name}
+                                {usuario?.nome}
                                 <ChevronDown className="w-4 h-4" />
                             </button>
 
-                            {menuOpen && (
+                            {menuAberto && (
                                 <ul className="absolute right-0 mt-2 w-48 bg-slate-800 text-white rounded-lg shadow-lg text-sm overflow-hidden border border-slate-700 z-50">
                                     <li>
                                         <Link
                                             to="/tasks"
                                             className="flex items-center gap-2 px-4 py-2 hover:bg-slate-700 transition"
-                                            onClick={() => setMenuOpen(false)}
+                                            onClick={() => setMenuAberto(false)}
                                         >
                                             <ListTodo className="w-4 h-4" />
                                             Minhas tarefas
@@ -53,8 +53,8 @@ export const Navbar = () => {
                                     <li>
                                         <button
                                             onClick={() => {
-                                                logout();
-                                                setMenuOpen(false);
+                                                sair();
+                                                setMenuAberto(false);
                                             }}
                                             data-testid="logout-button"
                                             className="flex items-center gap-2 w-full text-left px-4 py-2 hover:bg-slate-700 transition"
