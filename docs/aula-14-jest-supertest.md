@@ -649,7 +649,7 @@ No mesmo arquivo, escreva testes para:
 
 ## Parte 3: Atividades
 
-Se você terminou as Partes 1 e 2 antes do fim da aula, continue aqui; caso contrário, ficam para estudo extraclasse. Não há passo a passo, use o que foi praticado como referência.
+Se você terminou as Partes 1 e 2 antes do fim da aula, continue aqui. Caso contrário, essas atividades ficam para estudo extraclasse. Não há passo a passo, use o que foi praticado como referência.
 
 ### Atividade 1: Testes unitários para `validarEmail`
 
@@ -671,7 +671,7 @@ Adicione testes para `calcularEstatisticas` cobrindo:
 - Contagem correta por prioridade em `porPrioridade`
 - Tarefas sem prioridade definida (como aparecem nas estatísticas?)
 
-**Atenção ao matcher:** `calcularEstatisticas` retorna um objeto. Para comparar objetos, use `toEqual` em vez de `toBe`, como visto antes de iniciar a Parte 2.
+**Atenção ao comparador:** `calcularEstatisticas` retorna um objeto. Para comparar objetos, use `toEqual` em vez de `toBe`, como visto antes de iniciar a Parte 2.
 
 **Lembrete:** a função recebe uma lista de objetos com os campos `concluida` e `prioridade`. Exemplo:
 
@@ -731,7 +731,7 @@ Nesta aula você saiu do teste manual e escreveu testes automatizados em dois n�
 
 Alguns conceitos que atravessaram a aula:
 
-- **Arrange-Act-Assert:** organiza cada teste em preparar os dados, executar a ação e verificar o resultado
+- **Arrange-Act-Assert:** organiza cada teste em (***A**rrange*) preparar os dados, (***A**ct*) executar a ação e (***A**ssert*) verificar o resultado
 - ***Mock*:** substitui uma dependência real por uma versão controlada para isolar o que está sendo testado
 - **Banco de teste separado:** garante isolamento entre os dados de desenvolvimento e os dados dos testes
 - **Cobertura de código:** mede o que foi executado, não o que foi verificado corretamente; alta cobertura é um bom sinal, mas não garante que os testes são bons
