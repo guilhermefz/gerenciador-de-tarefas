@@ -5,7 +5,7 @@ import { defineConfig } from 'vitest/config';
 
 dotenv.config();
 
-const API_URL = process.env.VITE_API_URL || 'http://localhost:5000/api';
+const API_URL = process.env.VITE_API_URL || 'http://localhost:3001/api';
 
 export default defineConfig({
     plugins: [react(), tailwindcss()],
