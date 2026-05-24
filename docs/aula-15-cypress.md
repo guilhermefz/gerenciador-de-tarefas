@@ -23,6 +23,8 @@ Ao final desta aula, você terá:
 
 Na raiz do projeto, execute `npm run e2e:open:full`. Esse comando sobe o servidor em modo de teste, sobe o frontend e abre o Cypress, tudo de uma vez. Na primeira execução, o Cypress vai pedir para escolher o tipo de teste (selecione **E2E Testing**) e o navegador (escolha **Chrome**).
 
+O Cypress fica aberto durante toda a aula. Toda vez que você salvar um arquivo de teste, ele reexecuta automaticamente. Não é preciso fechar e reabrir entre uma rodada e outra.
+
 ## Como o Cypress está configurado neste projeto
 
 Você não precisa alterar nada aqui. Esta seção existe para você entender o que cada arquivo faz, o que pode ser útil se precisar reproduzir essa estrutura em outro projeto.
