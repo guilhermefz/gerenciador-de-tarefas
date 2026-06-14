@@ -1,15 +1,16 @@
 import cors from 'cors';
 import dotenv from 'dotenv';
+import express from 'express';
 import morgan from 'morgan';
 
 dotenv.config({
     path: process.env.NODE_ENV === 'test' ? '.env.test' : '.env',
 });
 
-import express from 'express';
 import { autenticar } from './middlewares/autenticacao.middleware';
 import { errorHandler } from './middlewares/error.middleware';
 import autenticacaoRoutes from './routes/autenticacao.routes';
+import comentarioRoutes from './routes/comentario.routes';
 import tarefaRoutes from './routes/tarefa.routes';
 import testeRoutes from './routes/teste.routes';
 
@@ -27,6 +28,7 @@ if (process.env.NODE_ENV !== 'test') {
 
 app.use('/api/autenticacao', autenticacaoRoutes);
 app.use('/api/tarefas', autenticar, tarefaRoutes);
+app.use('/api/tarefas/:tarefaId/comentarios', autenticar, comentarioRoutes);
 
 if (process.env.NODE_ENV === 'test') {
     app.use('/api/teste', testeRoutes);
