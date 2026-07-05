@@ -17,6 +17,14 @@ export interface Usuario {
     criadoEm?: string;
 }
 
+export interface Comentario {
+    id: number;
+    texto: string;
+    tarefaId: number;
+    usuarioId: number;
+    criadoEm: string;
+}
+
 export interface RespostaAutenticacao {
     token: string;
     usuario: {
