@@ -119,3 +119,88 @@ import {
       expect(resultado).toBe(0);
     });
   });
+
+  describe('validarEmail', () => {
+    it('deve retornar true para e-mail válido comum', () => {
+      const resultado = validarEmail('usuario@exemplo.com');
+
+      expect(resultado).toBe(true);
+    });
+
+    it('deve retornar false para e-mail sem "@"', () => {
+      const resultado = validarEmail('usuarioexemplo.com');
+
+      expect(resultado).toBe(false);
+    });
+
+    it('deve retornar false para e-mail sem domínio depois do "@"', () => {
+      const resultado = validarEmail('usuario@');
+
+      expect(resultado).toBe(false);
+    });
+
+    it('deve retornar false para e-mail sem ponto no domínio', () => {
+      const resultado = validarEmail('usuario@dominio');
+
+      expect(resultado).toBe(false);
+    });
+
+    it('deve retornar false para e-mail com espaços', () => {
+      const resultado = validarEmail('usuario @exemplo.com');
+
+      expect(resultado).toBe(false);
+    });
+
+    it('deve retornar false para string vazia', () => {
+      const resultado = validarEmail('');
+
+      expect(resultado).toBe(false);
+    });
+  });
+
+  describe('calcularEstatisticas', () => {
+    it('deve retornar tudo zerado para lista vazia', () => {
+      const resultado = calcularEstatisticas([]);
+
+      expect(resultado).toEqual({
+        total: 0,
+        concluidas: 0,
+        pendentes: 0,
+        porPrioridade: {},
+      });
+    });
+
+    it('deve contar corretamente tarefas concluídas e pendentes', () => {
+      const tarefas = [
+        { concluida: true, prioridade: 'high' },
+        { concluida: false, prioridade: 'low' },
+        { concluida: false, prioridade: 'high' },
+      ];
+
+      const resultado = calcularEstatisticas(tarefas);
+
+      expect(resultado.total).toBe(3);
+      expect(resultado.concluidas).toBe(1);
+      expect(resultado.pendentes).toBe(2);
+    });
+
+    it('deve contar corretamente por prioridade', () => {
+      const tarefas = [
+        { concluida: false, prioridade: 'high' },
+        { concluida: true, prioridade: 'high' },
+        { concluida: false, prioridade: 'low' },
+      ];
+
+      const resultado = calcularEstatisticas(tarefas);
+
+      expect(resultado.porPrioridade).toEqual({ high: 2, low: 1 });
+    });
+
+    it('deve agrupar tarefas sem prioridade definida', () => {
+      const tarefas = [{ concluida: false }, { concluida: false, prioridade: null }];
+
+      const resultado = calcularEstatisticas(tarefas);
+
+      expect(resultado.porPrioridade).toEqual({ sem_prioridade: 2 });
+    });
+  });

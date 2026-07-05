@@ -175,3 +175,47 @@ describe('POST /api/tarefas com título inválido', () => {
         expect(response.body).toHaveProperty('message');
     });
 });
+
+describe('GET /api/tarefas/estatisticas (Atividade 5)', () => {
+    it('deve aumentar o contador "concluidas" ao concluir uma tarefa', async () => {
+        // Arrange: consulta as estatísticas antes
+        const antes = await request(app).get('/api/tarefas/estatisticas');
+        const concluidasAntes = antes.body.concluidas;
+
+        // Cria uma tarefa e marca como concluída via PUT
+        const { body } = await request(app)
+            .post('/api/tarefas')
+            .send({ titulo: 'Tarefa para concluir', prioridade: 'medium' });
+
+        await request(app)
+            .put(`/api/tarefas/${body.id}`)
+            .send({ concluida: true });
+
+        // Act
+        const depois = await request(app).get('/api/tarefas/estatisticas');
+
+        // Assert
+        expect(depois.body.concluidas).toBe(concluidasAntes + 1);
+    });
+
+    it('deve aumentar o contador "atrasadas" ao criar tarefa com vencimento no passado', async () => {
+        // Arrange: consulta as estatísticas antes
+        const antes = await request(app).get('/api/tarefas/estatisticas');
+        const atrasadasAntes = antes.body.atrasadas;
+
+        // Cria uma tarefa com data de vencimento no passado
+        await request(app)
+            .post('/api/tarefas')
+            .send({
+                titulo: 'Tarefa vencida',
+                prioridade: 'high',
+                dataVencimento: '2020-01-01',
+            });
+
+        // Act
+        const depois = await request(app).get('/api/tarefas/estatisticas');
+
+        // Assert
+        expect(depois.body.atrasadas).toBe(atrasadasAntes + 1);
+    });
+});
