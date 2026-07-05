@@ -59,4 +59,60 @@ describe('Gerenciamento de Tarefas', () => {
             .should('contain', 'Primeira tarefa')
             .and('contain', 'Segunda tarefa');
     });
+
+    it('deve editar o título de uma tarefa', () => {
+        // cria a tarefa
+        cy.visit('/tasks/create');
+        cy.get('[data-testid="title-input"]').type('Título original');
+        cy.get('[data-testid="submit-button"]').click();
+
+        // acessa os detalhes clicando nela na lista
+        cy.contains('Título original').click();
+
+        // clica em editar
+        cy.get('[data-testid="edit-button"]').click();
+
+        // altera o título e salva
+        cy.get('[data-testid="title-input"]').clear().type('Título editado');
+        cy.get('[data-testid="submit-button"]').click();
+
+        // verifica o novo título na lista
+        cy.get('[data-testid="task-list"]')
+            .should('contain', 'Título editado')
+            .and('not.contain', 'Título original');
+    });
+
+    it('deve marcar uma tarefa como concluída', () => {
+        // cria a tarefa
+        cy.visit('/tasks/create');
+        cy.get('[data-testid="title-input"]').type('Tarefa para concluir');
+        cy.get('[data-testid="submit-button"]').click();
+
+        // acessa os detalhes e abre a edição
+        cy.contains('Tarefa para concluir').click();
+        cy.get('[data-testid="edit-button"]').click();
+
+        // marca como concluída e salva
+        cy.get('[data-testid="completed-checkbox"]').check();
+        cy.get('[data-testid="submit-button"]').click();
+
+        // acessa os detalhes novamente e verifica o status
+        cy.contains('Tarefa para concluir').click();
+        cy.get('[data-testid="task-status"]').should('contain', 'Concluída');
+    });
+
+    it('deve excluir uma tarefa', () => {
+        // cria a tarefa
+        cy.visit('/tasks/create');
+        cy.get('[data-testid="title-input"]').type('Tarefa para excluir');
+        cy.get('[data-testid="submit-button"]').click();
+
+        // acessa os detalhes e exclui
+        cy.contains('Tarefa para excluir').click();
+        cy.get('[data-testid="delete-button"]').click();
+
+        // verifica que sumiu da lista
+        cy.url().should('include', '/tasks');
+        cy.get('[data-testid="task-list"]').should('not.contain', 'Tarefa para excluir');
+    });
 });
